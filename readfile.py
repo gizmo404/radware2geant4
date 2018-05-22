@@ -302,6 +302,15 @@ for i in range(3,len(gamma_lines),3):
     BrRatio =       float(gamma_data2[3])
     MixRatio =      float(gamma_data2[5])
 
+    # radware is a liar and will give a single multipolarity and a mixing ratio
+    if MixRatio !=0:
+       Multipolarity_dict{
+               'M1' : 'M1+E2',
+               'M2' : 'M2+E3',
+               'M3' : 'M3+E4',
+               'M4' : 'M4+E5',
+               } #TODO expand this to include other combinations that can happen
+
 
     # whilst we're already going through the gammas increment the counter for
     # number of gammas for each level
