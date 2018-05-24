@@ -2,6 +2,11 @@ import re
 import subprocess
 import xml.etree.ElementTree as ET
 from math import log10, floor
+import sys
+
+if len(sys.argv) == 1:
+    print('Run program with input .ags file e.g. python readfile.py Cs133.ags')
+    sys.exit(-1)
 
 print("Script to eventually convert .ags (ascii gls) files from Radware into Geant4 input files!")
 
@@ -196,7 +201,7 @@ class GammaCorrelationEntry(object):
                 self.fracM5ICC,
                 self.fracOuterICC)
 ###############################################################################
-# probably won't be used
+# probably won't be used 
 def getLevelEnergy(level):
     return level.energy
 def getLevelEnergy(levelgammaentry):
@@ -235,13 +240,17 @@ def fractionToFloat(fraction):
 def round_sig(x, sig=4):
   return round(x, sig-int(floor(log10(abs(x))))-1)
 ###############################################################################
-file = open("Cs133.ags","r")#TODO make this a user input
+file = open(sys.argv[1],"r")
 
 #grab the file 
 #split the file into a list
 lines = file.read().splitlines()
 
 file.close()
+
+nucleus_info = lines[0].split()
+nucleus_z = nucleus_info[9]
+nucleus_a = nucleus_info[6]
 
 # find the lines for level data, band data, gamma data and label data
 level_flag = [i for i, item in enumerate(lines) if re.search('\*\* Level', item)]
@@ -301,16 +310,18 @@ for i in range(3,len(gamma_lines),3):
     ConvCoef =      float(gamma_data2[1])
     BrRatio =       float(gamma_data2[3])
     MixRatio =      float(gamma_data2[5])
-
+    
     # radware is a liar and will give a single multipolarity and a mixing ratio
     if MixRatio !=0:
-       Multipolarity_dict{
+       Multipolarity_dict = {
+               '0' : '0',
                'M1' : 'M1+E2',
                'M2' : 'M2+E3',
                'M3' : 'M3+E4',
                'M4' : 'M4+E5',
                } #TODO expand this to include other combinations that can happen
-
+       new_Multi = Multipolarity_dict.get(Multi)
+       Multi = new_Multi
 
     # whilst we're already going through the gammas increment the counter for
     # number of gammas for each level
@@ -338,8 +349,6 @@ for gamma in sorted_gammas:
     #print(gamma.Multi)
 
     # bricc_cmd = ['./briccs_osx.dms', '-Z 82', '-g 1063.656', '-e 3' ,'-L M4+E5', '-d +0.020', '-u 10', '-a', '-w BrIccFO']
-    nucleus = 55 # TODO make this a user input
-    #print(nucleus)
 
     ICCs = []
     TotalIIC = 0
@@ -347,19 +356,15 @@ for gamma in sorted_gammas:
     # print(gamma.Multi+ ' do you have a flag?')
     print(gamma.MixRatio)
     if gamma.Multi !=str(0):
-        bricc_cmd = ['./briccs_osx.dms', '-Z '+str(nucleus), '-g '+str(transitionEnergy), '-e 3' ,'-L '+gamma.Multi, '-a', '-w BrIccFO']
+        bricc_cmd = ['./briccs_osx.dms', '-Z '+nucleus_z, '-g '+str(transitionEnergy), '-e 3' ,'-L '+gamma.Multi, '-a', '-w BrIccFO']# TODO make this work on linux as well as mac
         foo = subprocess.Popen(bricc_cmd, stdout=subprocess.PIPE)
 
         foo_string = foo.communicate()[0].decode("utf-8")
 
 
-        #print(foo_string)
         root = ET.fromstring(foo_string)
 
         for child in root:
-            #print(child.attrib)
-            #print(child.text)
-            #print(child.get('Shell'))
             if child.get('Shell') == 'Tot':
                 ICCs.append(float(child.text))
                 TotalICC = float(child.text)
@@ -408,15 +413,10 @@ for gamma in sorted_gammas:
             0,0,0,
             0,0,0,0,0,
             0))
-    # for i in ICCs:
-    #     print(i)
-
-
-    #print(foo.communicate()[0])
 
 sorted_G4LevelGamma = sorted(G4LevelGamma,key=lambda x: x.initialEnergy)
-
-filename = 'test.txt' # TODO make this user input
+filename = 'z'+nucleus_z+'.a'+nucleus_a
+#filename = 'test.txt' # TODO make this user input
 f = open(filename,'w')
 for i in sorted_G4LevelGamma:
     print(i, file=f)
@@ -478,7 +478,7 @@ for counter, i in enumerate(sorted_gammas):
         G4LevelGamma[counter].fracM1ICC, G4LevelGamma[counter].fracM2ICC, G4LevelGamma[counter].fracM3ICC, G4LevelGamma[counter].fracM4ICC, G4LevelGamma[counter].fracM5ICC,
         G4LevelGamma[counter].fracOuterICC))
 
-filename = 'test_correlation.txt' # TODO make this user input
+filename = 'correlation_z'+nucleus_z+'.a'+nucleus_a
 f = open(filename,'w')
 
 tempcounter = 0
