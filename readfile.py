@@ -3,6 +3,8 @@ import subprocess
 import xml.etree.ElementTree as ET
 from math import log10, floor
 import sys
+import unittest
+import numpy
 
 # holder for information about the nucleus of interest
 class Nucleus(object):
@@ -24,7 +26,7 @@ class Level(object):
         self.energy = energy
         self.Jpi = Jpi
         self.n_gammas = n_gammas
-    
+
     def __repr__(self):
         return '{} : {} {} {} {}'.format(self.__class__.__name__,
                 self.index,
@@ -84,25 +86,6 @@ class G4LevelGammaEntry(object):
         self.fracM5ICC = fracM5ICC
         self.fracOuterICC = fracOuterICC
 
-    # def __repr__(self):
-    #     return '{} : {} {} {} {} {} {}\n{} {}\n{} {} {}\n{} {} {} {} {} {}'.format(self.__class__.__name__,
-    #             self.initialEnergy,
-    #             self.transitionEnergy,
-    #             self.transitionProb,
-    #             self.polarity,
-    #             self.halfLife,
-    #             self.angularMom,
-    #             self.totalICC,
-    #             self.fracKICC,
-    #             self.fracL1ICC,
-    #             self.fracL2ICC,
-    #             self.fracL3ICC,
-    #             self.fracM1ICC,
-    #             self.fracM2ICC,
-    #             self.fracM3ICC,
-    #             self.fracM4ICC,
-    #             self.fracM5ICC,
-    #             self.fracOuterICC)
     def __repr__(self):
         return '{} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(
                 self.initialEnergy,
@@ -132,15 +115,6 @@ class LevelCorrelationEntry(object):
         self.halfLife = halfLife
         self.Jpi = Jpi
         self.n_gammas = n_gammas
-
-    #def __repr__(self):
-    #    return '{} : {} {} {} {} {} {}'.format(self.__class__.__name__,
-    #            self.index,
-    #            self.floating,
-    #            self.energy,
-    #            self.halfLife,
-    #            self.Jpi,
-    #            self.n_gammas)
 
     def __repr__(self):
         return '{} {} {} {} {} {}'.format(
@@ -172,25 +146,6 @@ class GammaCorrelationEntry(object):
         self.fracM5ICC = fracM5ICC
         self.fracOuterICC = fracOuterICC
 
-    #def __repr__(self):
-    #    return '{} : {} {} {} {} {}\n{} {}\n{} {} {}\n{} {} {} {} {} {}'.format(self.__class__.__name__,
-    #            self.fLev,
-    #            self.energy,
-    #            self.intensity,
-    #            self.multi,
-    #            self.mixing,
-    #            self.totalICC,
-    #            self.fracKICC,
-    #            self.fracL1ICC,
-    #            self.fracL2ICC,
-    #            self.fracL3ICC,
-    #            self.fracM1ICC,
-    #            self.fracM2ICC,
-    #            self.fracM3ICC,
-    #            self.fracM4ICC,
-    #            self.fracM5ICC,
-    #            self.fracOuterICC)
-
     def __repr__(self):
         return '{} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(
                 self.fLev,
@@ -209,298 +164,426 @@ class GammaCorrelationEntry(object):
                 self.fracM4ICC,
                 self.fracM5ICC,
                 self.fracOuterICC)
-
 ###############################################################################
-def fractionToFloat(fraction):
-    num = 0
-    mult = 1
+class MathFuncs(object):
+    def __init__(self):
+        pass
 
-    if fraction[:1] == "-":
-        fraction = fraction[1:]     
-        mult = -1
+    def fractionToFloat(fraction):
+        num = 0
+        mult = 1
 
-    if " " in fraction:
-        a = fraction.split(" ")
-        num = float(a[0])
-        toSplit = a[1]
-    else:
-        toSplit = fraction
+        if fraction[:1] == "-":
+            fraction = fraction[1:]     
+            mult = -1
 
-    frac = toSplit.split("/")
-    num += float(frac[0]) / float(frac[1])
-
-    return num * mult
-def round_sig(x, sig=4):
-  return round(x, sig-int(floor(log10(abs(x))))-1)
-###############################################################################
-def readInput():
-    print('Reading file' +sys.argv[1])
-    file = open(sys.argv[1],"r")
-    
-    #grab the file 
-    #split the file into a list
-    lines = file.read().splitlines()
-    
-    file.close()
-    nucleus_info = lines[0].split()
-
-    global nucleus
-    nucleus.nucleus_name = nucleus_info[3]
-    nucleus.z = nucleus_info[9]
-    nucleus.a = nucleus_info[6]
-    
-    print('\nNucleus is '+nucleus.nucleus_name+'\n')
-
-
-    # find the lines for level data, band data, gamma data and label data
-    level_flag = [i for i, item in enumerate(lines) if re.search('\*\* Level', item)]
-    band_flag = [i for i, item in enumerate(lines) if re.search('\*\* Band', item)]
-    gamma_flag = [i for i, item in enumerate(lines) if re.search('\*\* Gamma', item)]
-    label_flag = [i for i, item in enumerate(lines) if re.search('\*\* Label', item)]
-    
-    # create lists with all the level and gamma info in
-    #for i in range (level_flag[0],band_flag[0]):
-    #    level_lines.append(lines[i])
-    global level_lines
-    global gamma_lines
-    level_lines = lines[level_flag[0]:band_flag[0]]
-    gamma_lines = lines[gamma_flag[0]:label_flag[0]]
-    print('File read\n')
-
-###############################################################################
-def generate_levels():
-    print('Extracting levels', end='\r')
-    for i in range(2,len(level_lines),2):
-        level_data = level_lines[i].split()
-        index =         int(level_data[0])
-        energy =        float(level_data[1])
-        s_Jpi =           str(level_data[3])
-    
-        s1_Jpi = s_Jpi.replace("+","")
-        s2_Jpi = s1_Jpi.replace("-","")
-        Jpi = fractionToFloat(s2_Jpi)
-    
-        levels.append(Level(index, energy, Jpi,0))
-    print('Levels extracted ')
-################################################################################
-def generate_gammas():
-    print('Extracting gammas', end='\r')
-    for i in range(3,len(gamma_lines),3):
-        gamma_data = gamma_lines[i].split()
-        gamma_data2 = gamma_lines[i+1].split()
-        index =         int(gamma_data[0])
-        energy =        float(gamma_data[1])
-        energy_error = float(gamma_data[2])
-    
-        # case of a good transition with all the useful bits
-        if (gamma_data[3] == 'M') or (gamma_data[3] == 'E'):
-            Multi =         str(gamma_data[3]+gamma_data[4])
-            ILev =          int(gamma_data[5])
-            FLev =          int(gamma_data[6])
-            intensity =     float(gamma_data[7])
+        if " " in fraction:
+            a = fraction.split(" ")
+            num = float(a[0])
+            toSplit = a[1]
+        elif not "/" in fraction:
+            return float(fraction)
         else:
-            Multi =         '0'
-            ILev =          int(gamma_data[3])
-            FLev =          int(gamma_data[4])
-            intensity =     float(gamma_data[5])
+            toSplit = fraction
+
+        frac = toSplit.split("/")
+        num += float(frac[0]) / float(frac[1])
+
+        return num * mult
+    def round_sig(x, sig=4):
+        if x ==0:
+            return 0
+        else:
+            return round(x, sig-int(floor(log10(abs(x))))-1)
+###############################################################################
+class InputFuncs(object):
+    def __init__(self):
+        pass
+    def readInput(filename):
+        print('Reading file '+filename)
+        file = open(filename,"r")
+
+        #grab the file 
+        #split the file into a list
+        lines = file.read().splitlines()
     
-        ConvCoef =      float(gamma_data2[1])
-        BrRatio =       float(gamma_data2[3])
-        MixRatio =      float(gamma_data2[5])
+        file.close()
+        # list of elements for user friendliness
+        elementList=["H","He","Li","Be","B","C","N","O","F","Ne","Na","Mg","Al","Si",
+                "P","S","Cl","Ar","K","Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu",
+                "Zn","Ga","Ge","As","Se","Br","Kr","Rb","Sr","Y","Zr","Nb","Mo","Tc",
+                "Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe","Cs","Ba","La",
+                "Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu",
+                "Hf","Ta","W","Re","Os","Ir","Pt","Au","Hg","Tl","Pb","Bi","Po","At",
+                "Rn","Fr","Ra","Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es",
+                "Fm","Md","No","Lr","Rf","Db","Sg","Bh","Hs","Mt","Ds","Rg","Cn","Nh",
+                "Fl","Mc","Lv","Ts","Og"]
+
+
+        #nucleus_info = lines[0].split()
+    
+        global nucleus
+        # nucleus.nucleus_name = nucleus_info[3]
+        # nucleus.z = nucleus_info[9]
+        # nucleus.a = nucleus_info[6]
+
+        nucleus.z = eval(input("Select Z:  "))
+        # read in A of nucleus
+        nucleus.a = eval(input("Select A:  "))
+
+        nucleus.nucleus_name = elementList[nucleus.z-1]
+    
+        print('\nNucleus is '+nucleus.nucleus_name+'\n')
+    
+    
+        # find the lines for level data, band data, gamma data and label data
+        level_flag = [i for i, item in enumerate(lines) if re.search('\*\* Level', item)]
+        band_flag = [i for i, item in enumerate(lines) if re.search('\*\* Band', item)]
+        gamma_flag = [i for i, item in enumerate(lines) if re.search('\*\* Gamma', item)]
+        label_flag = [i for i, item in enumerate(lines) if re.search('\*\* Label', item)]
+    
+        # create lists with all the level and gamma info in
+        #for i in range (level_flag[0],band_flag[0]):
+        #    level_lines.append(lines[i])
+        global level_lines
+        global gamma_lines
+        level_lines = lines[level_flag[0]:band_flag[0]]
+        gamma_lines = lines[gamma_flag[0]:label_flag[0]]
+
+    
+        return level_lines, gamma_lines
+    ###############################################################################
+    def generate_levels(_level_lines):
+        print('Extracting levels', end='\r')
+        for i in range(2,len(_level_lines),2):
+            level_data = _level_lines[i].split()
+            index =         int(level_data[0])
+            energy =        float(level_data[1])
+            s_Jpi =           str(level_data[3])
+    
+            s1_Jpi = s_Jpi.replace("+","")
+            s2_Jpi = s1_Jpi.replace("-","")
+            Jpi = MathFuncs.fractionToFloat(s2_Jpi)
+    
+            levels.append(Level(index, energy, Jpi,0))
+        print('Levels extracted ')
+    ################################################################################
+    def generate_gammas(_gamma_lines):
+        print('Extracting gammas', end='\r')
+        for i in range(3,len(_gamma_lines),3):
+            gamma_data = _gamma_lines[i].split()
+            gamma_data2 = _gamma_lines[i+1].split()
+            index =         int(gamma_data[0])
+            energy =        float(gamma_data[1])
+            energy_error = float(gamma_data[2])
+    
+            # case of a good transition with all the useful bits
+            if (gamma_data[3] == 'M') or (gamma_data[3] == 'E'):
+                Multi =         str(gamma_data[3]+gamma_data[4])
+                ILev =          int(gamma_data[5])
+                FLev =          int(gamma_data[6])
+                intensity =     float(gamma_data[7])
+            else:
+                Multi =         '0'
+                ILev =          int(gamma_data[3])
+                FLev =          int(gamma_data[4])
+                intensity =     float(gamma_data[5])
+    
+            ConvCoef =      float(gamma_data2[1])
+            BrRatio =       float(gamma_data2[3])
+            MixRatio =      float(gamma_data2[5])
+    
+            # radware is a liar and will give a single multipolarity and a mixing ratio
+            if MixRatio !=0:
+               Multipolarity_dict = {
+                       '0' : '0',
+                       'M1' : 'M1+E2',
+                       'M2' : 'M2+E3',
+                       'M3' : 'M3+E4',
+                       'M4' : 'M4+E5',
+                       } #TODO expand this to include other combinations that can happen
+               new_Multi = Multipolarity_dict.get(Multi)
+               Multi = new_Multi
+    
+            # whilst we're already going through the gammas increment the counter for
+            # number of gammas for each level
+            levels[ILev-1].n_gammas +=1
+            # the initial level energy will be useful later
+            EILev = levels[ILev-1].energy 
+    
+            EFLev = levels[FLev-1].energy
+    
+            gammas.append(Transition(index,energy,energy_error,Multi,ILev,FLev,intensity,ConvCoef,BrRatio,MixRatio,EILev,EFLev))
+        print('Gammas extracted \n')
+    ################################################################################
+    def readE0Input(filename):
+        print('Reading E0 file '+filename)
+        file = open(filename,"r")
+    
+        #for i in gammas:
+        #    print(i)
+
+        #for i in levels:
+        #    print(i)
+
+        lines = file.read().splitlines()
+   
+        extra_transitions = []
+        #extra_levels = [] # TODO do we want extra levels addable by this file?
+
+        for i in lines[1:]:
+            #print(i)
+            transition_data = i.split()
+            energy = float(transition_data[0])
+            Multi = transition_data[1]
+            BrRatio = transition_data[2]
+            MixRatio = transition_data[3]
+            initial_energy = float(transition_data[4])
+            final_energy = float(transition_data[5])
+            ILev = 0
+            FLev = 0
+
+
+            for j in levels:
+                if j.energy == final_energy:
+                   FLev = j.index 
+                if j.energy == initial_energy:
+                    #print('found it ')
+                    #print(j)
+                    ILev = j.index
+
+            index = len(gammas)+1
         
-        # radware is a liar and will give a single multipolarity and a mixing ratio
-        if MixRatio !=0:
-           Multipolarity_dict = {
-                   '0' : '0',
-                   'M1' : 'M1+E2',
-                   'M2' : 'M2+E3',
-                   'M3' : 'M3+E4',
-                   'M4' : 'M4+E5',
-                   } #TODO expand this to include other combinations that can happen
-           new_Multi = Multipolarity_dict.get(Multi)
-           Multi = new_Multi
-    
-        # whilst we're already going through the gammas increment the counter for
-        # number of gammas for each level
+        #print('{} {} {} {} {} {} {} {} {} {} {} {}'.format(index, energy, 1.0, Multi, ILev, FLev, 10, 10000000, BrRatio, MixRatio, initial_energy, final_energy))
+
+        gammas.append(Transition(index, energy, 1, Multi, ILev, FLev, 10, 10000000, BrRatio, MixRatio, initial_energy, final_energy))
         levels[ILev-1].n_gammas +=1
-        # the initial level energy will be useful later
-        EILev = levels[ILev-1].energy 
-    
-        EFLev = levels[FLev-1].energy
-    
-        gammas.append(Transition(index,energy,energy_error,Multi,ILev,FLev,intensity,ConvCoef,BrRatio,MixRatio,EILev,EFLev))
-    print('Gammas extracted \n')
+
+        # TODO fix the numbers that are just placeholders, namely intensity
+        # TODO check if the level already has transitions coming out, and modify the intensity accordingly
+        file.close()
+
+        return level_lines, gamma_lines
 ################################################################################
-def generate_g4_input():
-    print('Generating Geant4 input',end='\r')
-    sorted_levels = sorted(levels, key=lambda x: x.index)
-
-    sorted_gammas = sorted(gammas, key=lambda x: x.EILev)
-
-    for gamma in sorted_gammas:
-        levelEnergy = sorted_levels[gamma.ILev-1].energy
-        transitionEnergy = gamma.energy
-        #transitionEnergyError = '-e '+str(gamma.energy_error)
-        #transitionEnergyError = '-e +'+str(gamma.energy_error)+'-'+str(gamma.energy_error)
-        #transitionEnergyError = '-e '+str(1)
-        transitionEnergyError = '-e '+str(1)
-        #transitionEnergyError = '-e 1'
-        # TODO entering a non-integer number for the error breaks bricc
-        intensity = gamma.intensity*10
-        Jpi = sorted_levels[gamma.ILev-1].Jpi
+class OutputFuncs(object):
+    def __init__(self):
+        pass
+    ################################################################################
+    def parse_bricc(bricc_cmd):
+        # call bricc, do things
+        foo = subprocess.Popen(bricc_cmd, stdout=subprocess.PIPE)
+         
+        foo_string = foo.communicate()[0].decode("utf-8")
     
-        #print(gamma.Multi)
+        #print(foo_string)
     
-        # bricc_cmd = ['./briccs_osx.dms', '-Z 82', '-g 1063.656', '-e 3' ,'-L M4+E5', '-d +0.020', '-u 10', '-a', '-w BrIccFO']
-    
+        root = ET.fromstring(foo_string)
         ICCs = []
-        TotalIIC = 0
-    
-        # print(gamma.Multi+ ' do you have a flag?')
-        # print(transitionEnergyError)
-        if gamma.Multi !=str(0):
-            # bricc_cmd = ['./briccs_osx.dms', '-Z '+nucleus_z, '-g '+str(transitionEnergy), '-e 1','-L '+gamma.Multi, '-a', '-w BrIccFO']
-            bricc_cmd = ['./briccs.dms', '-Z '+nucleus.z, '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-a', '-w BrIccFO']
-            foo = subprocess.Popen(bricc_cmd, stdout=subprocess.PIPE)
-    
-            foo_string = foo.communicate()[0].decode("utf-8")
-    
-            # print(foo_string)
-    
-            root = ET.fromstring(foo_string)
-    
+
+                    
+        if '-L E0' in bricc_cmd:
+            for child in root:
+                if child.get('Shell') == 'K': 
+                    ICCs.append(float(child.text))
+                elif child.get('Shell') == 'L1': 
+                    ICCs.append(float(child.text))
+                elif child.get('Shell') == 'L2': 
+                    ICCs.append(float(child.text))
+                if child.get('Shell') == 'Tot':
+                    ICCs.append(float(child.text))
+            return numpy.array(ICCs)
+        else:
             for child in root:
                 if child.get('Shell') == 'Tot':
                     ICCs.append(float(child.text))
-                    TotalICC = float(child.text)
                 elif child.get('Shell') == 'K': 
-                    ICCs.append(float(child.text)/TotalICC)
+                    ICCs.append(float(child.text))
                 elif child.get('Shell') == 'L1': 
-                    ICCs.append(float(child.text)/TotalICC)
+                    ICCs.append(float(child.text))
                 elif child.get('Shell') == 'L2': 
-                    ICCs.append(float(child.text)/TotalICC)
+                    ICCs.append(float(child.text))
                 elif child.get('Shell') == 'L3': 
-                    ICCs.append(float(child.text)/TotalICC)
+                    ICCs.append(float(child.text))
                 elif child.get('Shell') == 'M1': 
-                    ICCs.append(float(child.text)/TotalICC)
+                    ICCs.append(float(child.text))
                 elif child.get('Shell') == 'M2': 
-                    ICCs.append(float(child.text)/TotalICC)
+                    ICCs.append(float(child.text))
                 elif child.get('Shell') == 'M3': 
-                    ICCs.append(float(child.text)/TotalICC)
+                    ICCs.append(float(child.text))
                 elif child.get('Shell') == 'M4': 
-                    ICCs.append(float(child.text)/TotalICC)
+                    ICCs.append(float(child.text))
                 elif child.get('Shell') == 'M5': 
-                    ICCs.append(float(child.text)/TotalICC)
+                    ICCs.append(float(child.text))
+            return numpy.array(ICCs)
+    ################################################################################
+    def generate_g4_input(_nucleus, _levels, _gammas):
+        print('Generating Geant4 input',end='\r')
+        sorted_levels = sorted(_levels, key=lambda x: x.index)
     
-            G4LevelGamma.append(G4LevelGammaEntry(
-                levelEnergy,# initial level energy
-                transitionEnergy,# transition energy
-                intensity,# transition probability
-                "foo",# polarity change NOT USED
-                0,# half life (useful?)
-                Jpi,# spin of initial level NOT USED
-                round_sig(ICCs[0]),
-                round_sig(ICCs[1]),
-                round_sig(ICCs[2]),round_sig(ICCs[3]), round_sig(ICCs[4]),
-                round_sig(ICCs[5]),round_sig(ICCs[6]),round_sig(ICCs[7]),round_sig(ICCs[8]),round_sig(ICCs[9]),
-                round_sig(1-ICCs[1]-ICCs[2]-ICCs[3]-ICCs[4]-ICCs[5]-ICCs[6]-ICCs[7]-ICCs[8]-ICCs[9])))
-            # Total round(ICC, frac K, L1-3, M1-5, outer
-        else:
-            G4LevelGamma.append(G4LevelGammaEntry(
-                levelEnergy,# initial level energy
-                transitionEnergy,# transition energy
-                intensity,# transition probability
-                "foo",# polarity change NOT USED
-                0,# half life (useful?)
-                Jpi,# spin of initial level NOT USED
-                0,
-                0,
-                0,0,0,
-                0,0,0,0,0,
-                0))
+        sorted_gammas = sorted(_gammas, key=lambda x: x.EILev)
     
-    sorted_G4LevelGamma = sorted(G4LevelGamma,key=lambda x: x.initialEnergy)
-    filename = 'z'+nucleus.z+'.a'+nucleus.a
-    f = open(filename,'w')
-    for i in sorted_G4LevelGamma:
-        print(i, file=f)
+        for gamma in sorted_gammas:
+            levelEnergy = sorted_levels[gamma.ILev-1].energy
+            transitionEnergy = gamma.energy
+            transitionEnergyError = '-e '+str(1)
+            # TODO entering a non-integer number for the error breaks bricc
+            intensity = gamma.intensity*10
+            Jpi = sorted_levels[gamma.ILev-1].Jpi
+    
+            ICCs = []
+            TotalIIC = 0
+    
+            if gamma.Multi !=str(0):
+                # TODO Can we get the error on the mixing ratio from the .ags
+                
+                ICCs = numpy.array([])
 
-    print('Geant4 input file, '+filename+' generated')
+                if str(gamma.MixRatio) == '0.0':
+                    bricc_cmd = ['./briccs.dms', '-Z '+str(_nucleus.z), '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-a', '-w BrIccFO']
+                    ICCs = OutputFuncs.parse_bricc(bricc_cmd)
+                elif gamma.MixRatio != 0.0:
+                    bricc_cmd = ['./briccs.dms', '-Z '+str(_nucleus.z), '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-d '+str(gamma.MixRatio), '-u 10', '-a', '-w BrIccFO']
+                    ICCs = OutputFuncs.parse_bricc(bricc_cmd)
+                else:
+                    sys.exit(-1)
+    
+                if len(ICCs) == 10:
+                    newICCs = []
+                    newICCs.append(ICCs[0])
+                    newICCs.append(ICCs[1]/ICCs[0])
+                    newICCs.append(ICCs[2]/ICCs[0])
+                    newICCs.append(ICCs[3]/ICCs[0])
+                    newICCs.append(ICCs[4]/ICCs[0])
+                    newICCs.append(ICCs[5]/ICCs[0])
+                    newICCs.append(ICCs[6]/ICCs[0])
+                    newICCs.append(ICCs[7]/ICCs[0])
+                    newICCs.append(ICCs[8]/ICCs[0])
+                    newICCs.append(ICCs[9]/ICCs[0])
+                    ICCs = newICCs
+                    
+                elif len(ICCs) == 4:
+                    newICCs = []
+                    newICCs.append(ICCs[3])
+                    newICCs.append(ICCs[0]/ICCs[3])
+                    newICCs.append(ICCs[1]/ICCs[3])
+                    newICCs.append(ICCs[2]/ICCs[3])
+                    newICCs.append(0)
+                    newICCs.append(0)
+                    newICCs.append(0)
+                    newICCs.append(0)
+                    newICCs.append(0)
+                    newICCs.append(0)
+                    ICCs = newICCs
 
-################################################################################
-def generate_correlation_g4_input():
-    print('Generating Geant4 correlation input',end='\r')
-    sorted_levels = sorted(levels, key=lambda x: x.energy)
-    sorted_gammas = sorted(gammas, key=lambda x: x.ILev)
-    index_dict = {}
-    #sorted_levels.sort(key = lambda x: x.energy)
-    #sorted_gammas.sort(key = lambda x: x.ILev)
-
-    for counter, i in enumerate(sorted_levels):
-        index_dict[sorted_levels[counter].index] = counter
-        index = counter
-        floating = '-'
-        energy = sorted_levels[counter].energy
-        if energy == 0:
-            halfLife = -1
-        else:
-            halfLife = 0
-        Jpi = sorted_levels[counter].Jpi
-        n_gammas = sorted_levels[counter].n_gammas
-        
-        G4correlatedLevels.append(LevelCorrelationEntry(index, floating, energy, halfLife, Jpi, n_gammas))
-
-    sorted_levels.sort(key = lambda x: x.energy)
-    sorted_gammas.sort(key = lambda x: x.EILev)
+                G4LevelGamma.append(G4LevelGammaEntry(
+                    levelEnergy,# initial level energy
+                    transitionEnergy,# transition energy
+                    intensity,# transition probability
+                    "foo",# polarity change NOT USED
+                    0,# half life (useful?)
+                    Jpi,# spin of initial level NOT USED
+                    MathFuncs.round_sig(ICCs[0]),
+                    MathFuncs.round_sig(ICCs[1]),
+                    MathFuncs.round_sig(ICCs[2]),MathFuncs.round_sig(ICCs[3]), MathFuncs.round_sig(ICCs[4]),
+                    MathFuncs.round_sig(ICCs[5]),MathFuncs.round_sig(ICCs[6]),MathFuncs.round_sig(ICCs[7]),MathFuncs.round_sig(ICCs[8]),MathFuncs.round_sig(ICCs[9]),
+                    MathFuncs.round_sig(1-ICCs[1]-ICCs[2]-ICCs[3]-ICCs[4]-ICCs[5]-ICCs[6]-ICCs[7]-ICCs[8]-ICCs[9])))
+                # Total round(ICC, frac K, L1-3, M1-5, outer
+            else:
+                G4LevelGamma.append(G4LevelGammaEntry(
+                    levelEnergy,# initial level energy
+                    transitionEnergy,# transition energy
+                    intensity,# transition probability
+                    "foo",# polarity change NOT USED
+                    0,# half life (useful?)
+                    Jpi,# spin of initial level NOT USED
+                    0,
+                    0,
+                    0,0,0,
+                    0,0,0,0,0,
+                    0))
     
-    #for i in sorted_G4LevelGamma:
-    #    print(i)
-    #for i in sorted_gammas:
-    #    print(i)
+        sorted_G4LevelGamma = sorted(G4LevelGamma,key=lambda x: x.initialEnergy)
+        filename = 'z'+str(_nucleus.z)+'.a'+str(_nucleus.a)
+        f = open(filename,'w')
+        for i in sorted_G4LevelGamma:
+            print(i, file=f)
     
-    Multi_dict = {'0' : 0,
-            'E1' : 1, 'M1' : 2,
-            'E2' : 3, 'M2' : 4,
-            'E3' : 5, 'M3' : 6,
-            'E4' : 7, 'M4' : 8,
-            'E5' : 9, 'M5' : 10,
-            'M1+E2' : 201,
-            'M2+E3' : 405,
-            'M3+E4' : 607,
-            'M4+E5' : 809
-            } # TODO expand this to include E0's and E0 components
+        print('Geant4 input file, '+filename+' generated')
+    ################################################################################
+    def generate_correlation_g4_input(_nucleus, _levels, _gammas):
+        print('Generating Geant4 correlation input',end='\r')
+        sorted_levels = sorted(_levels, key=lambda x: x.energy)
+        sorted_gammas = sorted(_gammas, key=lambda x: x.ILev)
+        index_dict = {}
+        #sorted_levels.sort(key = lambda x: x.energy)
+        #sorted_gammas.sort(key = lambda x: x.ILev)
     
-    for counter, i in enumerate(sorted_gammas):
-        index = 0 # index of daughter level 
-        index = index_dict[sorted_gammas[counter].FLev]
-        energy = sorted_gammas[counter].energy 
-        intensity = sorted_gammas[counter].intensity*10 # relative intensity
+        for counter, i in enumerate(sorted_levels):
+            index_dict[sorted_levels[counter].index] = counter
+            index = counter
+            floating = '-'
+            energy = sorted_levels[counter].energy
+            if energy == 0:
+                halfLife = -1
+            else:
+                halfLife = 0
+            Jpi = sorted_levels[counter].Jpi
+            n_gammas = sorted_levels[counter].n_gammas
     
-        Multipolarity_string = sorted_gammas[counter].Multi
-        Multipolarity = Multi_dict[Multipolarity_string]
+            G4correlatedLevels.append(LevelCorrelationEntry(index, floating, energy, halfLife, Jpi, n_gammas))
     
-        MixRatio = sorted_gammas[counter].MixRatio
+        sorted_levels.sort(key = lambda x: x.energy)
+        sorted_gammas.sort(key = lambda x: x.EILev)
     
-        G4correlatedGamma.append(GammaCorrelationEntry(index, energy, intensity, Multipolarity, MixRatio,
-            G4LevelGamma[counter].totalICC,
-            G4LevelGamma[counter].fracKICC,
-            G4LevelGamma[counter].fracL1ICC, G4LevelGamma[counter].fracL2ICC, G4LevelGamma[counter].fracL3ICC,
-            G4LevelGamma[counter].fracM1ICC, G4LevelGamma[counter].fracM2ICC, G4LevelGamma[counter].fracM3ICC, G4LevelGamma[counter].fracM4ICC, G4LevelGamma[counter].fracM5ICC,
-            G4LevelGamma[counter].fracOuterICC))
+        #for i in sorted_G4LevelGamma:
+        #    print(i)
+        #for i in sorted_gammas:
+        #    print(i)
     
-    filename = 'correlation_z'+nucleus.z+'.a'+nucleus.a
-    f = open(filename,'w')
+        Multi_dict = {'0' : 0,
+                'E0' : -1,
+                'E1' : 1, 'M1' : 2,
+                'E2' : 3, 'M2' : 4,
+                'E3' : 5, 'M3' : 6,
+                'E4' : 7, 'M4' : 8,
+                'E5' : 9, 'M5' : 10,
+                'M1+E2' : 201,
+                'M2+E3' : 405,
+                'M3+E4' : 607,
+                'M4+E5' : 809
+                } # TODO expand this to include E0's and E0 components
     
-    tempcounter = 0
-    for i in G4correlatedLevels:
-        #print(i)
-        print(i, file=f)
-        for j in range(i.n_gammas):
-            #print(sorted_gammas[tempcounter])
-            #print(G4correlatedGamma[tempcounter])
-            print(G4correlatedGamma[tempcounter], file=f)
-            tempcounter+=1
-    print('Geant4 correlation input file, '+filename+' generated')
+        for counter, i in enumerate(sorted_gammas):
+            index = 0 # index of daughter level 
+            index = index_dict[sorted_gammas[counter].FLev]
+            energy = sorted_gammas[counter].energy 
+            intensity = sorted_gammas[counter].intensity*10 # relative intensity
+    
+            Multipolarity_string = sorted_gammas[counter].Multi
+            Multipolarity = Multi_dict[Multipolarity_string]
+    
+            MixRatio = sorted_gammas[counter].MixRatio
+    
+            G4correlatedGamma.append(GammaCorrelationEntry(index, energy, intensity, Multipolarity, MixRatio,
+                G4LevelGamma[counter].totalICC,
+                G4LevelGamma[counter].fracKICC,
+                G4LevelGamma[counter].fracL1ICC, G4LevelGamma[counter].fracL2ICC, G4LevelGamma[counter].fracL3ICC,
+                G4LevelGamma[counter].fracM1ICC, G4LevelGamma[counter].fracM2ICC, G4LevelGamma[counter].fracM3ICC, G4LevelGamma[counter].fracM4ICC, G4LevelGamma[counter].fracM5ICC,
+                G4LevelGamma[counter].fracOuterICC))
+    
+        filename = 'correlation_z'+str(_nucleus.z)+'.a'+str(_nucleus.a)
+        f = open(filename,'w')
+    
+        tempcounter = 0
+        for i in G4correlatedLevels:
+            #print(i)
+            print(i, file=f)
+            for j in range(i.n_gammas):
+                #print(sorted_gammas[tempcounter])
+                #print(G4correlatedGamma[tempcounter])
+                print(G4correlatedGamma[tempcounter], file=f)
+                tempcounter+=1
+        print('Geant4 correlation input file, '+filename+' generated')
 ################################################################################
 
 # Gloabal lists and objects to be passed around between functions
@@ -527,15 +610,22 @@ def main():
         print('\nWARNING NO INPUT GIVEN\n\nRun program with input .ags file e.g. python readfile.py Cs133.ags')
         sys.exit(-1)
 
-    readInput()#TODO make this take an input so it's easier to debug    
+    input_file = sys.argv[1]
+    InputFuncs.readInput(input_file)
 
-    generate_levels()#TODO make this take an input so it's easier to debug
-    generate_gammas()#TODO make this take an input so it's easier to debug
+    InputFuncs.generate_levels(level_lines)
+    InputFuncs.generate_gammas(gamma_lines)
 
-    generate_g4_input()#TODO make this take an input so it's easier to debug
-    generate_correlation_g4_input()#TODO make this take an input so it's easier to debug
+    if len(sys.argv) == 3:
+        E0input_file = sys.argv[2]
+        InputFuncs.readE0Input(E0input_file)
+
+    OutputFuncs.generate_g4_input(nucleus, levels, gammas)
+    OutputFuncs.generate_correlation_g4_input(nucleus, levels, gammas)
 
     print("\nGeant4 input file should be placed in 'Geant4/Data/Geant4.10.X/PhotonEvaporationX.X")
     print("Geant4 correlation input file should be editted to remove 'correlation_' prefix and placed in 'Geant4/Data/Geant4.10.X/PhotonEvaporationX.X/correlated_gamma'")
 if __name__ == "__main__":
     main() 
+
+# TODO make this handle E0's!
