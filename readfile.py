@@ -5,6 +5,7 @@ from math import log10, floor
 import sys
 import unittest
 import numpy
+from sys import platform
 
 # holder for information about the nucleus of interest
 class Nucleus(object):
@@ -439,10 +440,17 @@ class OutputFuncs(object):
                 ICCs = numpy.array([])
 
                 if str(gamma.MixRatio) == '0.0':
-                    bricc_cmd = ['./briccs.dms', '-Z '+str(_nucleus.z), '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-a', '-w BrIccFO']
+                    if platform == "linux" or platform == "linux2":
+                        bricc_cmd = ['./briccs_linux.dms', '-Z '+str(_nucleus.z), '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-a', '-w BrIccFO']
+                    elif platform == "darwin":
+    # linux
+                    bricc_cmd = ['./briccs_osx.dms', '-Z '+str(_nucleus.z), '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-a', '-w BrIccFO']
                     ICCs = OutputFuncs.parse_bricc(bricc_cmd)
                 elif gamma.MixRatio != 0.0:
-                    bricc_cmd = ['./briccs.dms', '-Z '+str(_nucleus.z), '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-d '+str(gamma.MixRatio), '-u 10', '-a', '-w BrIccFO']
+                    if platform == "linux" or platform == "linux2":
+                        bricc_cmd = ['./briccs_linux.dms', '-Z '+str(_nucleus.z), '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-d '+str(gamma.MixRatio), '-u 10', '-a', '-w BrIccFO']
+                    elif platform == "darwin":
+                        bricc_cmd = ['./briccs_osx.dms', '-Z '+str(_nucleus.z), '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-d '+str(gamma.MixRatio), '-u 10', '-a', '-w BrIccFO']
                     ICCs = OutputFuncs.parse_bricc(bricc_cmd)
                 else:
                     sys.exit(-1)
