@@ -15,5 +15,8 @@ Included files:
 * readfile.py - main script
 * unittest_readfile.py - unit testing to try and catch my terrible coding
 * Examples - folder of examlple ags schemes and generated files of varying complexity for testing and comparison
-
+    * Single pure transition
+    * Single mixed transition
+    * Single E0 transition
+    * single "rotational" band"
 

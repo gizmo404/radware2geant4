@@ -1,0 +1,28 @@
+** ASCII Graphical Level Scheme file.
+** First five lines are reserved for comments.
+** This file created 04-Jun-18 13:29:18
+** Program GLS,  author D.C. Radford
+**
+ ASCII GLS file format version 1.0
+**  Z Nlevels Ngammas  Nbands Nlabels CharSizeX CharSizeY ArrowWidFact
+   82       2       1       1       0     75.00     85.00      3.00
+**  MaxArrowTan MaxArrowDX DefBandWid DefBandSep ArrowWidth ArrowLength
+       0.267900     999.00     600.00     150.00      40.00      80.00
+** ArrowBreak LevelBreak   LevCSX   LevCSY LevEnCSX LevEnCSY   GamCSX   GamCSY
+       30.00       40.00    75.00    85.00    75.00    85.00    75.00    85.00
+** Level   Energy +/- err     Jpi     K Band# LevelFlag LabelFlag EnLabFlag
+++   LabelDX   LabelDY EnLabelDX EnLabelDY  LevelDX1  LevelDX2
+     1      0.000   0.000      0+     0     1         0         0         0 &
+++      0.00      0.00      0.00      0.00      0.00      0.00
+     2    200.000   0.000      2+     0     1         0         0         0 &
+++      0.00      0.00      0.00      0.00      0.00      0.00
+** Band   Name        X0        NX   LabelDX   LabelDY EnLabelDX EnLabelDY
+    1      gsb  30000.00    600.00      0.00      0.00      0.00      0.00
+** Gamma   Energy +/- err  Mult  ILev  FLev  Intensity +/- err
+++     ConvCoef +/- error      BrRatio +/- error     MixRatio +/- error
+++   GammaX1  GammaX2  LabelDX  LabelDY GammaFlag LabelFlag
+     1    200.000   1.000   E 2     2     1    10.0000  1.0000 &
+++  4.33640E-01 0.000E+00  0.00000E+00 0.000E+00  0.00000E+00 0.000E+00 &
+++      0.00  60600.00      0.00      0.00         0         0
+** Label                                   text  NChars
+++     SizeX     SizeY PositionX PositionY
