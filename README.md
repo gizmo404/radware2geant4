@@ -20,3 +20,11 @@ Included files:
     * Single E0 transition
     * single "rotational" band"
 
+Usage:
+`python readfile.py [ags file] (optional) [E0 file]`
+
+
+A little information on formatting
+* E0 
+||##||energy||multipolarity||BranchingRatio||MixingRatio||e_Init||e_Final||
+
