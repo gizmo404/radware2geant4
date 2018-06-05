@@ -6,6 +6,7 @@ This is not ready yet.
 * Geant4.10.4 (input data files changed from 4.10.3->4.10.4)
 * Qt (if you want visualisations)
 * Root6 (needed if you use NPTool)
+* [CADMesh](https://github.com/christopherpoole/CADMesh) (needed if you are using the Spede part of NPTool)
 * NPTool (if you want an easy way to input this files and spin populations)
 * BrIcc and BrIccs (website is currently down so I can't link it here)
 * Python3 (tested with 3.6.5)
