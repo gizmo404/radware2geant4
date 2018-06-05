@@ -1,0 +1,29 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%  Reaction file for 188Pb*(2H, 2H*) 188Pb %%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Beam
+ Particle= 188Pb
+ Energy= 350 MeV
+ SigmaEnergy= 3.5 MeV
+ SigmaX= 0 mm
+ SigmaY= 0 mm
+ SigmaThetaX= 0 
+ SigmaPhiY= 0
+ MeanThetaX= 0
+ MeanPhiY= 0
+ MeanX= 0
+ MeanY= 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+TwoBodyReaction
+ Beam= 188Pb
+ Target= 2H
+ Light= 2H
+ Heavy= 188Pb
+ Z= 82
+ A= 188
+ PhotonEvaporation= user_z82.a188
+ InitialPopulationHeavy= initial_population_z82.a188
+ ExcitationEnergyLight= 0.0
+ CrossSectionPath= flat.txt CSR
+ ShootHeavy= 1
+ ShootLight= 0

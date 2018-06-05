@@ -1,0 +1,112 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ THICKNESS= 2 micrometer
+ RADIUS=	5 mm
+ MATERIAL= CD2
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Spede
+ POS= 0 0 -24. mm
+ Shape= Silicon
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Spede
+% Field= 130617SPEDE+CD.TABLE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Spede
+ R= 2 
+ THETA= 0
+ PHI= 270
+ Shape= Ladder 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Spede
+ R= -15
+ THETA= 0
+ PHI= 0
+ Shape= Foil
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  %Upstream CD
+Sharc
+ Z= 24 mm
+ R= 0
+ Phi= 0
+ ThicknessDetector= 500 um
+Sharc
+ Z= 24 mm
+ R= 0
+ Phi= 90
+ ThicknessDetector= 500 um
+Sharc
+ Z= 24 mm
+ R= 0
+ Phi= 180
+ ThicknessDetector= 500 um
+Sharc
+ Z= 24 mm
+ R= 0
+ Phi= 270
+ ThicknessDetector= 500 um
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Miniball
+ R= 120
+ THETA= 131.5
+ PHI= 127.8
+ ALPHA= 65
+ TEMPALPHA= 50
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Miniball
+ R= 120
+ THETA= 50
+ PHI= 50
+ ALPHA= 130
+ TEMPALPHA= 50
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Miniball
+ R= 120
+ THETA= 50
+ PHI= 120
+ ALPHA= 110
+ TEMPALPHA= 50
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Miniball
+ R= 120
+ THETA= 137.5
+ PHI= 53.5
+ ALPHA= 50
+ TEMPALPHA= 50
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Miniball
+ R= 120
+ THETA= 131.5
+ PHI= 249.5
+ ALPHA= 290
+ TEMPALPHA= 50
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Miniball
+ R= 120
+ THETA= 45
+ PHI= 232.8
+ ALPHA= 340
+ TEMPALPHA= 50
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Miniball
+ R= 120
+ THETA= 131.5
+ PHI= 312.5
+ ALPHA= 330
+ TEMPALPHA= 50
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Miniball
+ R= 120
+ THETA= 45
+ PHI= 312.5
+ ALPHA= 10
+ TEMPALPHA= 50
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Miniball
+% GDMLFilePath= /NPSimulation/Detectors/Miniball/
+% GDMLFileName= PlungerKammerMiniball.gdml
+% GDMLWorldName= MINIBALL_world

@@ -1,0 +1,28 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Target
+ THICKNESS= 1.6 micrometer
+ RADIUS=	5 mm
+ MATERIAL= Al
+ ANGLE= 0 deg
+ X= 0 mm
+ Y= 0 mm
+ Z= 0 mm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Miniball
+ R= 150
+ THETA= 30 
+ PHI= 45
+ ALPHA= 0
+ TEMPALPHA= 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Miniball
+ R= 150
+ THETA= 135
+ PHI= 45
+ ALPHA= 0
+ TEMPALPHA= 0
+Miniball
+ Degrader = Mg
+ Distance = 19 mm
+ Thickness = 23.5 um
+ Radius = 25 mm

@@ -578,7 +578,7 @@ class OutputFuncs(object):
                 G4LevelGamma[counter].fracM1ICC, G4LevelGamma[counter].fracM2ICC, G4LevelGamma[counter].fracM3ICC, G4LevelGamma[counter].fracM4ICC, G4LevelGamma[counter].fracM5ICC,
                 G4LevelGamma[counter].fracOuterICC))
     
-        filename = 'correlation_z'+str(_nucleus.z)+'.a'+str(_nucleus.a)
+        filename = 'user_z'+str(_nucleus.z)+'.a'+str(_nucleus.a)
         f = open(filename,'w')
     
         tempcounter = 0
@@ -630,8 +630,7 @@ def main():
     OutputFuncs.generate_g4_input(nucleus, levels, gammas)
     OutputFuncs.generate_correlation_g4_input(nucleus, levels, gammas)
 
-    print("\nGeant4 input file should be placed in 'Geant4/Data/Geant4.10.X/PhotonEvaporationX.X")
-    print("Geant4 correlation input file should be editted to remove 'correlation_' prefix and placed in 'Geant4/Data/Geant4.10.X/PhotonEvaporationX.X/correlated_gamma'")
+    print("\nGeant4 input file generated")
 if __name__ == "__main__":
     main() 
 
