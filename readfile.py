@@ -443,8 +443,7 @@ class OutputFuncs(object):
                     if platform == "linux" or platform == "linux2":
                         bricc_cmd = ['./briccs_linux.dms', '-Z '+str(_nucleus.z), '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-a', '-w BrIccFO']
                     elif platform == "darwin":
-    # linux
-                    bricc_cmd = ['./briccs_osx.dms', '-Z '+str(_nucleus.z), '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-a', '-w BrIccFO']
+                        bricc_cmd = ['./briccs_osx.dms', '-Z '+str(_nucleus.z), '-g '+str(transitionEnergy), transitionEnergyError ,'-L '+gamma.Multi, '-a', '-w BrIccFO']
                     ICCs = OutputFuncs.parse_bricc(bricc_cmd)
                 elif gamma.MixRatio != 0.0:
                     if platform == "linux" or platform == "linux2":

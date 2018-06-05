@@ -83,7 +83,7 @@ def main():
     print('Reading file for isotope:    {0}-{1}'.format(elementList[z-1],a))
 
     if len(sys.argv) == 1: data = readFile(z, a)
-    elif len(sys.argv) == 2: data = readFile(sys.argv[1])
+    elif len(sys.argv) == 2: data = readFile(z,a,sys.argv[1])
 
     #generateIntensityFile(data, z, a)
 
