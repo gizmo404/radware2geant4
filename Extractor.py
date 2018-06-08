@@ -29,22 +29,6 @@ def readFile(z, a, filename = None):
         data = data_file.readlines()
         return data
 
-def generateIntensityFile(data, z, a): # old data format reader
-    new_path = 'intensity_z'+str(z)+'.a'+str(a)
-    intensity_file = open (new_path,'w')
-
-    #intensity_file.write('{0} {1}'.format(z,a)
-
-    for level_line in data: 
-        level_line = level_line.replace('\t', ' ') # remove annoying tabs
-        line = level_line.split()# split line
-        level = line[0]
-        gamma = line[1]
-        # get intensity from user
-        intensity = eval(input("Enter intensity for {0}keV transition from level at {1}keV:  ".format(gamma,level)))
-        #write level and gamma to a line in file
-        intensity_file.write('{0} {1} {2}\n'.format(level, gamma,intensity))
-
 class _RegExLib:
     """Set up regular expressions"""
     _reg_level = re.compile('\s*\d+\s+-.*')
@@ -54,7 +38,7 @@ class _RegExLib:
         self.level = self._reg_level.match(line)
         self.gamma = self._reg_gamma.match(line)
 
-def extract(data, z, a):
+def extract(data, z, a, intensity_flag):
     new_path = 'intensity_z'+str(z)+'.a'+str(a)
     intensity_file = open (new_path,'w')
     current_level = 0
@@ -64,12 +48,24 @@ def extract(data, z, a):
             level_line = line.split()
             current_level = level_line[2]
         if reg_match.gamma:
-            print(line)
             gamma_line = line.split()
             gamma =  gamma_line[1]
-            print(current_level, gamma)
-            intensity = eval(input("Enter intensity for {0}keV transition from level at {1}keV:  ".format(gamma,current_level)))
-            intensity_file.write('{0} {1} {2}\n'.format(current_level, gamma,intensity))
+            ICC = gamma_line[5]
+            #print(current_level, gamma, ICC)
+            #intensity = eval(input("Enter intensity for {0}keV transition from level at {1}keV:  ".format(gamma,current_level)))
+            intensity = (input("Enter intensity for {0}keV transition from level at {1}keV:  ".format(gamma,current_level)))
+
+            # catch if the user input no intensity, make it zero 
+            if intensity == '':
+                intensity = 0
+
+            if intensity_flag == 2:
+                total_intensity = float(intensity) * (1 + float(ICC))
+                print("Total Intensity: " + total_intensity)
+                intensity_file.write('{0} {1} {2}\n'.format(current_level, gamma,total_intensity))
+            elif intensity_flag == 1:
+                print("Intensity: " + intensity)
+                intensity_file.write('{0} {1} {2}\n'.format(current_level, gamma,intensity))
     
 
 def main():
@@ -79,7 +75,11 @@ def main():
     # read in A of nucleus
     a = eval(input("Select A:  "))
 
-    # list element that is being used
+    intensity_flag = eval(input("Input total intensities (1) or gamma-ray intensities (2)? "))
+
+
+    print(intensity_flag)
+
     print('Reading file for isotope:    {0}-{1}'.format(elementList[z-1],a))
 
     if len(sys.argv) == 1: data = readFile(z, a)
@@ -87,7 +87,7 @@ def main():
 
     #generateIntensityFile(data, z, a)
 
-    extract(data, z, a)
+    extract(data, z, a, intensity_flag)
 
 if __name__ == "__main__":
     main() 
