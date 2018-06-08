@@ -510,12 +510,12 @@ class OutputFuncs(object):
                     0))
     
         sorted_G4LevelGamma = sorted(G4LevelGamma,key=lambda x: x.initialEnergy)
-        filename = 'z'+str(_nucleus.z)+'.a'+str(_nucleus.a)
-        f = open(filename,'w')
-        for i in sorted_G4LevelGamma:
-            print(i, file=f)
+        #filename = 'z'+str(_nucleus.z)+'.a'+str(_nucleus.a)
+        #f = open(filename,'w')
+        #for i in sorted_G4LevelGamma:
+        #    print(i, file=f)
     
-        print('Geant4 input file, '+filename+' generated')
+        #print('Geant4 input file, '+filename+' generated')
     ################################################################################
     def generate_correlation_g4_input(_nucleus, _levels, _gammas):
         print('Generating Geant4 correlation input',end='\r')
@@ -548,16 +548,14 @@ class OutputFuncs(object):
         #    print(i)
     
         Multi_dict = {'0' : 0,
-                'E0' : -1,
-                'E1' : 1, 'M1' : 2,
-                'E2' : 3, 'M2' : 4,
-                'E3' : 5, 'M3' : 6,
-                'E4' : 7, 'M4' : 8,
-                'E5' : 9, 'M5' : 10,
-                'M1+E2' : 201,
-                'M2+E3' : 405,
-                'M3+E4' : 607,
-                'M4+E5' : 809
+                'E0' : 1,
+                'E1' : 2, 'M1' : 3,
+                'E2' : 4, 'M2' : 5,
+                'E3' : 6, 'M3' : 7,
+                'E4' : 8, 'M4' : 9,
+                'M1+E2' : 304,
+                'M2+E3' : 506,
+                'M3+E4' : 708
                 } # TODO expand this to include E0's and E0 components
     
         for counter, i in enumerate(sorted_gammas):
@@ -571,7 +569,16 @@ class OutputFuncs(object):
     
             MixRatio = sorted_gammas[counter].MixRatio
     
-            G4correlatedGamma.append(GammaCorrelationEntry(index, energy, intensity, Multipolarity, MixRatio,
+            # If there's no conversion coefficient given, don't write all the 0's as it breaks Geant4
+            if float(G4LevelGamma[counter].totalICC) == 0:
+                G4correlatedGamma.append(GammaCorrelationEntry(index, energy, intensity, Multipolarity, MixRatio,
+                G4LevelGamma[counter].totalICC,
+                "",
+                "","","",
+                "","","","","",
+                ""))
+            else:
+                G4correlatedGamma.append(GammaCorrelationEntry(index, energy, intensity, Multipolarity, MixRatio,
                 G4LevelGamma[counter].totalICC,
                 G4LevelGamma[counter].fracKICC,
                 G4LevelGamma[counter].fracL1ICC, G4LevelGamma[counter].fracL2ICC, G4LevelGamma[counter].fracL3ICC,

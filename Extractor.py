@@ -61,10 +61,10 @@ def extract(data, z, a, intensity_flag):
 
             if intensity_flag == 2:
                 total_intensity = float(intensity) * (1 + float(ICC))
-                print("Total Intensity: " + total_intensity)
+                print("Total Intensity: {0} ".format(total_intensity))
                 intensity_file.write('{0} {1} {2}\n'.format(current_level, gamma,total_intensity))
             elif intensity_flag == 1:
-                print("Intensity: " + intensity)
+                print("Intensity: {0} ".format(intensity))
                 intensity_file.write('{0} {1} {2}\n'.format(current_level, gamma,intensity))
     
 
@@ -92,3 +92,5 @@ def main():
 if __name__ == "__main__":
     main() 
 
+
+# TODO stop this from overwriting files if they already exist
