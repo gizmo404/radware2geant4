@@ -430,42 +430,57 @@ class OutputFuncs(object):
         #print(foo_string)
 
         root = ET.fromstring(foo_string)
-        ICCs = []
 
 
         if '-L E0' in bricc_cmd:
+            ICCs = [0,0,0,0]
             for child in root:
                 if child.get('Shell') == 'K': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[0] = float(child.text)
                 elif child.get('Shell') == 'L1': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[1] = float(child.text)
                 elif child.get('Shell') == 'L2': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[2] = float(child.text)
                 if child.get('Shell') == 'Tot':
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[3] = float(child.text)
             return numpy.array(ICCs)
         else:
+            ICCs = [0,0,0,0,0,0,0,0,0,0]
             for child in root:
                 if child.get('Shell') == 'Tot':
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[0] = float(child.text)
                 elif child.get('Shell') == 'K': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[1] = float(child.text)
                 elif child.get('Shell') == 'L1': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[2] = float(child.text)
                 elif child.get('Shell') == 'L2': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[3] = float(child.text)
                 elif child.get('Shell') == 'L3': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[4] = float(child.text)
                 elif child.get('Shell') == 'M1': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[5] = float(child.text)
                 elif child.get('Shell') == 'M2': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[6] = float(child.text)
                 elif child.get('Shell') == 'M3': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[7] = float(child.text)
                 elif child.get('Shell') == 'M4': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[8] = float(child.text)
                 elif child.get('Shell') == 'M5': 
-                    ICCs.append(float(child.text))
+                    #ICCs.append(float(child.text))
+                    ICCs[9] = float(child.text)
             return numpy.array(ICCs)
     ################################################################################
     def generate_intensities(_nucleus, _gammas):
