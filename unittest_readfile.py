@@ -181,6 +181,7 @@ class TestReadFile(unittest.TestCase):
 
     def test_extract_intensities(self):
     #   extract ags intensities and return a list with energy, intensity
+    #   TODO this is expecting the intensities before correcting for the ICC, need to fix this or it fails
         file = open('test_intensities.txt')
         file_intensities = file.readlines()
         file.close()
