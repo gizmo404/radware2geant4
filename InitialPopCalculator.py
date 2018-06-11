@@ -16,6 +16,7 @@ def parseFile(_data, _levels, _transitions, _intensities):
     # read file line, by line and split into lists
     for level_line in _data:
         line = level_line.split()# split line
+        print(line)
         _levels.append(line[0])
         _transitions.append(line[1])
         _intensities.append(line[2])

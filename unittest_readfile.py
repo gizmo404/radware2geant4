@@ -188,7 +188,7 @@ class TestReadFile(unittest.TestCase):
         IntensitiesRef = []
         for entry in file_intensities:
             i = entry.split()
-            IntensitiesRef.append([float(i[0]),float(i[1])])
+            IntensitiesRef.append([float(i[0]),float(i[1]),float(i[2])])
 
         file = open('test_gammas.txt')
         file_gammas = file.readlines()

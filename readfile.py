@@ -124,8 +124,8 @@ class G4LevelGammaEntry(object):
                 self.fracM4ICC,
                 self.fracM5ICC,
                 self.fracOuterICC)
-    def __str__(self):
-        return str(self.__dict__)
+    #def __str__(self):
+    #    return str(self.__dict__)
     def __eq__(self, other): 
         comparison = False
         if ((self.initialEnergy == approx(other.initialEnergy, rel=0.01)) and
@@ -152,8 +152,8 @@ class LevelCorrelationEntry(object):
                 self.halfLife,
                 self.Jpi,
                 self.n_gammas)
-    def __str__(self):
-        return str(self.__dict__)
+    #def __str__(self):
+    #    return str(self.__dict__)
 
     def __eq__(self, other): 
         return self.__dict__ == other.__dict__
@@ -196,8 +196,8 @@ class GammaCorrelationEntry(object):
                 self.fracM4ICC,
                 self.fracM5ICC,
                 self.fracOuterICC)
-    def __str__(self):
-        return str(self.__dict__)
+    #def __str__(self):
+    #    return str(self.__dict__)
 
     def __eq__(self, other): 
         comparison = False
@@ -471,17 +471,18 @@ class OutputFuncs(object):
     def generate_intensities(_nucleus, _gammas):
         Intensities = []
         for i in _gammas:
-            Intensities.append([i.energy,i.intensity])
+            Intensities.append([i.EILev,i.energy,i.intensity])
 
         filename = 'intensity_z'+str(_nucleus.z)+'.a'+str(_nucleus.a)
         f = open(filename,'w')
         
         for i in Intensities:
-                print('{0} {1}'.format(i[0],i[1]), file=f)
+                print('{0} {1} {2}'.format(i[0],i[1],i[2]), file=f)
 
         return Intensities
     ################################################################################
     def generate_g4_input(_nucleus, _levels, _gammas):
+        G4LevelGamma = []
         print('Generating Geant4 input',end='\r')
         sorted_levels = sorted(_levels, key=lambda x: x.index)
 
@@ -584,7 +585,7 @@ class OutputFuncs(object):
 
         #print('Geant4 input file, '+filename+' generated')
     ################################################################################
-    def generate_correlation_g4_input(_nucleus, _levels, _gammas):
+    def generate_correlation_g4_input(_nucleus, _levels, _gammas, G4LevelGamma):
         print('Generating Geant4 correlation input',end='\r')
         sorted_levels = sorted(_levels, key=lambda x: x.energy)
         sorted_gammas = sorted(_gammas, key=lambda x: x.ILev)
@@ -707,10 +708,11 @@ def main():
 
     intensities = OutputFuncs.generate_intensities(nucleus, gammas)
     G4LevelGamma = OutputFuncs.generate_g4_input(nucleus, levels, gammas)
-    OutputFuncs.generate_correlation_g4_input(nucleus, levels, gammas)
+    OutputFuncs.generate_correlation_g4_input(nucleus, levels, gammas, G4LevelGamma)
 
     print("\nGeant4 input file generated")
 if __name__ == "__main__":
     main() 
 
 # TODO make this handle E0's!
+# TODO make this call InitialPopCalculator and generate that file here so all files exist should the user want them

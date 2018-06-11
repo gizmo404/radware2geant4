@@ -13,7 +13,7 @@ This is not ready yet.
 * numpy (really useful python extension)
 
 ## Included files:
-* readfile.py - main script for generating Geant4 PhotonEvaporation input files
+* readfile.py - main script for generating Geant4 PhotonEvaporation input files along with an intensity file which can be read into InitialPopCalculator.py
 * unittest_readfile.py - unit testing to try and catch my terrible coding
 * Examples - folder of examlple ags schemes and generated files of varying complexity for testing and comparison
     * Single pure transition
