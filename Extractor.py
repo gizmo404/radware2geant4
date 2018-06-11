@@ -51,8 +51,6 @@ def extract(data, z, a, intensity_flag):
             gamma_line = line.split()
             gamma =  gamma_line[1]
             ICC = gamma_line[5]
-            #print(current_level, gamma, ICC)
-            #intensity = eval(input("Enter intensity for {0}keV transition from level at {1}keV:  ".format(gamma,current_level)))
             intensity = (input("Enter intensity for {0}keV transition from level at {1}keV:  ".format(gamma,current_level)))
 
             # catch if the user input no intensity, make it zero 
