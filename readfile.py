@@ -334,9 +334,9 @@ class InputFuncs(object):
                 intensity =     float(gamma_data[7])
             else:
                 Multi =         '0'
-                ILev =          int(gamma_data[3])
-                FLev =          int(gamma_data[4])
-                intensity =     float(gamma_data[5])
+                ILev =          int(gamma_data[4])
+                FLev =          int(gamma_data[5])
+                intensity =     float(gamma_data[6])
 
             ConvCoef =      float(gamma_data2[1])
             BrRatio =       float(gamma_data2[3])
@@ -368,7 +368,7 @@ class InputFuncs(object):
         # for i in gammas:
         #     print(i)
     ################################################################################
-    def readE0Input(filename):
+    def readE0Input(filename, levels, gammas):
         print('Reading E0 file '+filename)
         file = open(filename,"r")
 
@@ -384,14 +384,15 @@ class InputFuncs(object):
         #extra_levels = [] # TODO do we want extra levels addable by this file?
 
         for i in lines[1:]:
-            #print(i)
             transition_data = i.split()
+
             energy = float(transition_data[0])
-            Multi = transition_data[1]
-            BrRatio = transition_data[2]
-            MixRatio = transition_data[3]
-            initial_energy = float(transition_data[4])
-            final_energy = float(transition_data[5])
+            Intensity = float(transition_data[1])
+            Multi = transition_data[2]
+            BrRatio = transition_data[3]
+            MixRatio = transition_data[4]
+            initial_energy = float(transition_data[5])
+            final_energy = float(transition_data[6])
             ILev = 0
             FLev = 0
 
@@ -408,7 +409,7 @@ class InputFuncs(object):
 
         #print('{} {} {} {} {} {} {} {} {} {} {} {}'.format(index, energy, 1.0, Multi, ILev, FLev, 10, 10000000, BrRatio, MixRatio, initial_energy, final_energy))
 
-        gammas.append(Transition(index, energy, 1, Multi, ILev, FLev, 10, 10000000, BrRatio, MixRatio, initial_energy, final_energy))
+        gammas.append(Transition(index, energy, 1, Multi, ILev, FLev, Intensity/1000000, 10000000, BrRatio, MixRatio, initial_energy, final_energy))
         levels[ILev-1].n_gammas +=1
 
         # TODO fix the numbers that are just placeholders, namely intensity
@@ -427,7 +428,7 @@ class OutputFuncs(object):
 
         foo_string = foo.communicate()[0].decode("utf-8")
 
-        #print(foo_string)
+        # print(foo_string)
 
         root = ET.fromstring(foo_string)
 
@@ -561,6 +562,7 @@ class OutputFuncs(object):
                     newICCs.append(0)
                     newICCs.append(0)
                     ICCs = newICCs
+                    print(ICCs)
 
                 G4LevelGamma.append(G4LevelGammaEntry(
                     levelEnergy,# initial level energy
@@ -717,9 +719,12 @@ def main():
     levels = InputFuncs.generate_levels(level_lines)
     gammas = InputFuncs.generate_gammas(gamma_lines, levels)
 
+    for i in range(len(gammas)):
+        print(gammas[i])
+
     if len(sys.argv) == 3:
         E0input_file = sys.argv[2]
-        InputFuncs.readE0Input(E0input_file)
+        InputFuncs.readE0Input(E0input_file, levels, gammas)
 
     intensities = OutputFuncs.generate_intensities(nucleus, gammas)
     G4LevelGamma = OutputFuncs.generate_g4_input(nucleus, levels, gammas)

@@ -1,5 +1,7 @@
 Script to go from radware ascii gls \*.ags to geant4 compatible input for photon evaporation.
 
+NOTE : Floating bands cannot currently be handled, this is a Geant4 limitation
+
 This is not ready yet.
 
 ## Requirements:
@@ -21,7 +23,7 @@ This is not ready yet.
     * Single E0 transition
     * single "rotational" band"
 * Extractor.py - script to take a Geant4 input file and extract the level and gamma information and allow user to input intensities for each transition
-* InitialPopCalculator.py - script to take the output of Extractor.py and calculate initial populations for all states
+* InitialPopCalculator.py - script to take the intensity file from Extractor.py or readfile.py and calculate initial populations for all states
 
 ## Usage:
 `python readfile.py [ags file] [E0 file]`
