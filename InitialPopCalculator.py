@@ -1,119 +1,190 @@
-import math
-import numpy
+import re
+import subprocess
+import xml.etree.ElementTree as ET
+from math import log10, floor
+from pytest import approx
+import sys
+import unittest
+import numpy as np
+from sys import platform
 
+################################################################################
+# holder for the transition information coming out of the intensity file 
+################################################################################
+class Transition(object):
+    def __init__(self, index=0, energy=0., transition_energy=0., intensity=0., ILev=0, FLev=0):
+        self.index = int(index)
+        self.energy = float(energy)
+        self.transition_energy = float(transition_energy)
+        self.intensity = float(intensity)
+        self.ILev = int(ILev)
+        self.FLev = int(FLev)
 
+    def __repr__(self):
+        return '\n{} : {} {} {} {} {} {}'.format(self.__class__.__name__,
+                self.index,
+                self.energy,
+                self.transition_energy,
+                self.intensity,
+                self.ILev,
+                self.FLev)
+    def __str__(self):
+        return str(self.__dict__)
+    def __eq__(self, other): 
+        comparison = False
+        if ((self.index == other.index) and
+            #(np.float(self.energy) == approx(np.float(other.energy), rel=0.01)) and
+            (self.FLev == other.FLev) and 
+            (self.ILev == other.ILev)
+        ):
+            comparison = True
+        return comparison
+################################################################################
+# holder for the initial population information to go into the output file
+################################################################################
+class Initial_Population(object):
+    def __init__(self, energy=0., initial_population=0.):
+        self.energy = energy
+        self.initial_population = initial_population 
 
+    def __repr__(self):
+        return '\n{} : {} {}'.format(self.__class__.__name__,
+                self.energy,
+                self.initial_population)
+    def __str__(self):
+        return str(self.__dict__)
+    def __eq__(self, other): 
+        comparison = False
+        if ((self.index== other.index) and
+            (np.float(self.energy) == approx(np.float(other.energy), rel=0.01))
+        ):
+            comparison = True
+        return comparison
+
+################################################################################
+# read in the intensity file and just store it line by line
+################################################################################
 def readFile(z, a):
 
     path = 'intensity_z'+str(z)+'.a'+str(a)
     intensity_file = open (path,'r')
     data = intensity_file.readlines()
     return data
-
-def parseFile(_data, _levels, _transitions, _intensities):
-
-
-    # read file line, by line and split into lists
+################################################################################
+# convert input file into transitions
+################################################################################
+def parseFile(_data, _transitions):
+    index = 0
     for level_line in _data:
-        line = level_line.split()# split line
-        print(line)
-        _levels.append(line[0])
-        _transitions.append(line[1])
-        _intensities.append(line[2])
-
-
-def findDepopulatingLevels(_levels, _unique_levels_out, _level_intensities_out, _intensities):
-    # loop over the levels and find each unique level and the intensity of all transitions out of it
-    for counter, level in enumerate(_levels):
-        level = round(float(level),2)
-        if level not in _unique_levels_out:
-            _unique_levels_out.append(level)
-            _level_intensities_out.append(float(_intensities[counter]))
+        line = level_line.split()
+        new_transition = Transition(index, line[0], line[1], line[2], line[3], line[4])# temporary transitions for comparison
+        if new_transition not in _transitions:# check there's not been a transitions from the same level energy before
+            index = index + 1# this is a new level, show increment the index
+        _transitions.append(Transition(index, line[0], line[1], line[2], line[3], line[4]))
+################################################################################
+# Find all unique levels and their corresponding depopulating intensity
+################################################################################
+def findDepopulatingLevels(_transitions, _unique_levels_out):
+    for transition in _transitions:
+        ILev = transition.ILev
+        ILevs = []
+        for trans in _unique_levels_out:
+            ILevs.append(trans.ILev)
+        if transition.ILev not in ILevs:
+            _unique_levels_out.append(Transition(transition.ILev, transition.energy, 0, transition.intensity, transition.ILev, 0))
         else:
-            _level_intensities_out[_unique_levels_out.index(level)] += float(_intensities[counter])
-
-    [round(float(i), 2) for i in _unique_levels_out]
-
+            transition_location = _unique_levels_out.index(Transition(ILev, transition.energy, 0, 0, ILev, 0))
+            _unique_levels_out[transition_location].intensity = _unique_levels_out[transition_location].intensity +transition.intensity
     print('{}\n{}'.format('unique excited levels',_unique_levels_out))
-    print('{}\n{}'.format('intensities out',_level_intensities_out))
 
+################################################################################
+# Find all levels with intensity going into them and sum it
+################################################################################
+def findPopulatingLevels(_transitions, _unique_levels_in):
+    for transition in _transitions:
+        FLev = transition.FLev
+        FLevs = []
+        for trans in _unique_levels_in:
+            FLevs.append(trans.FLev)
+        if FLev == "0": # is it the ground state? special case
+            continue
+        elif transition.FLev not in FLevs:# is it a new transition that's being populated?
+            _unique_levels_in.append(Transition(transition.FLev, 0, 0, transition.intensity, 0, transition.FLev))
+        else:# find the already existing populated level and add the intensity to it
+            transition_location = _unique_levels_in.index(Transition(FLev, 0, 0, 0, 0, FLev))
+            _unique_levels_in[transition_location].intensity = _unique_levels_in[transition_location].intensity + transition.intensity
+    print('{}\n{}'.format('unique levels with transitions into them',_unique_levels_in))
 
-def findPopulatingLevels(_levels, _unique_levels_in, _level_intensities_in, _transitions, _intensities):
-    #loop over the levels and find each unique level with transitions into it and sum the incoming intensities
-    for counter, level in enumerate(_levels):
-        level = round(float(level),2)
-        comparison_level = level - round(float(_transitions[counter]),2)
-        comparison_level = round(comparison_level,2)
-        if comparison_level != 0:
-            if comparison_level not in _unique_levels_in:
-                _unique_levels_in.append(comparison_level)
-                _level_intensities_in.append(float(_intensities[counter]))
-            else: 
-                _level_intensities_in[_unique_levels_in.index(comparison_level)] += float(_intensities[counter])
+################################################################################
+# Find the total starting intensity in the system
+################################################################################
+def calculateInitialPopulation(_unique_levels_in, _unique_levels_out, _initial_population):
+    total_intensity = 0
+    ILevs = []
+    FLevs = []
+    ILevIntensities = []
+    FLevIntensities = []
+    ILevEnergies = []
 
-    print('{}\n{}'.format('unique excited levels with transitions into them',_unique_levels_in))
-    print('{}\n{}'.format('Intensities in',_level_intensities_in))
+    for transition in _unique_levels_out:
+        ILevs.append(transition.ILev)
+        ILevIntensities.append(transition.intensity)
+        ILevEnergies.append(transition.energy)
 
-def calculateInitialPopulation(_unique_levels_in, _level_intensities_in, _unique_levels_out, _level_intensities_out, _initial_levels, _initial_population):
+    for transition in _unique_levels_in:
+        FLevs.append(transition.FLev)
+        FLevIntensities.append(transition.intensity)
+
+    for x, i in enumerate(ILevs):
+        if i in FLevs:
+            location = FLevs.index(i)
+            ILevIntensities[x] = ILevIntensities[x] - FLevIntensities[location]
+
+    for x,i in enumerate(ILevs):
+        _initial_population.append(Initial_Population(ILevEnergies[x], ILevIntensities[x]))
+        total_intensity = total_intensity + ILevIntensities[x]
+
+    print(_initial_population)
     
-    total_initial_intensity = 0.
-    for counter, level in enumerate(_unique_levels_out):
-        if level not in _unique_levels_in:
-            total_initial_intensity += _level_intensities_out[counter]
-            _initial_levels.append(level)
-            _initial_population.append(_level_intensities_out[counter])
-        else:
-            total_initial_intensity += _level_intensities_out[counter] - _level_intensities_in[_unique_levels_in.index(level)]
-    
-            _initial_levels.append(level)
-            _initial_population.append(_level_intensities_out[counter] - _level_intensities_in[_unique_levels_in.index(level)])
-    return total_initial_intensity
-    
-def generateInitialPopulationFile(_initial_population, _total_initial_intensity, _initial_levels, z, a):
+    return total_intensity
+################################################################################
+# Generate final output file
+################################################################################
+def generateInitialPopulationFile(_initial_population, _total_initial_intensity, z, a):
     scaled_initial_population = []
     for x in _initial_population:
-        scaled_initial_population.append(x/_total_initial_intensity)
-    
-    print('Levels with initial populations\n{}\nFractional initial population of levels\n{}'.format(_initial_levels, scaled_initial_population))
-    
+        scaled_initial_population.append(Initial_Population(x.energy, x.initial_population/_total_initial_intensity))
+
+    print('Fractional initial population of levels\n{}'.format(scaled_initial_population))
+
     path = 'initial_population_z'+str(z)+'.a'+str(a)
     initial_population_file = open(path, 'w')
 
-    for counter, level in enumerate(_initial_levels):
-        initial_population_file.write('{0} {1}\n'.format(level, scaled_initial_population[counter]))
+    for counter, level in enumerate(_initial_population):
+        initial_population_file.write('{0} {1}\n'.format(scaled_initial_population[counter].energy, scaled_initial_population[counter].initial_population))
+    
 
 def main():
     # read in Z of nucleus
     z = eval(input("Select Z:  "))
     # read in A of nucleus
     a = eval(input("Select A:  "))
+    
+    transitions = []# transitions read from file
+    unique_levels_out = []# indices of unique depopulating levels and intensities
 
-    # get the extractor generated file
-    # create lists to put the file contents in
-    levels = []
-    transitions = []
-    intensities = []
+    unique_levels_in = []# indicies of uniqe levels being populated
+    level_intensities_in = []# intensities into populated levels
 
-    unique_levels_out = []
-    level_intensities_out = []
-
-    unique_levels_in = []
-    level_intensities_in = []
-
-    initial_levels = []
-    initial_population = []
+    initial_population = []# Populations to be output
 
     data = readFile(z, a)
-    parseFile(data, levels, transitions, intensities)
-    findDepopulatingLevels(levels, unique_levels_out, level_intensities_out, intensities)
-    findPopulatingLevels(levels, unique_levels_in, level_intensities_in, transitions, intensities)
-    total_initial_intensity = calculateInitialPopulation(unique_levels_in, level_intensities_in, unique_levels_out, level_intensities_out, initial_levels, initial_population)
-    print(total_initial_intensity)
-    generateInitialPopulationFile(initial_population, total_initial_intensity, initial_levels, z, a)
+    parseFile(data, transitions)
+    findDepopulatingLevels(transitions, unique_levels_out)
+    findPopulatingLevels(transitions, unique_levels_in)
+   
+    total_intensity = calculateInitialPopulation(unique_levels_in, unique_levels_out, initial_population)
+    generateInitialPopulationFile(initial_population, total_intensity, z, a)
 
 if __name__ == "__main__":
     main()
-
-#TODO make an object holding levels and intensities becauese they're used always together and all the time
-#TODO make this smart enough to spot when numbers break and fractional intensities are negative
-#TODO 

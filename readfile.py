@@ -487,13 +487,13 @@ class OutputFuncs(object):
     def generate_intensities(_nucleus, _gammas):
         Intensities = []
         for i in _gammas:
-            Intensities.append([i.EILev,i.energy,i.intensity*(1+i.ConvCoef)])
+            Intensities.append([i.EILev,i.energy,i.intensity*(1+i.ConvCoef), i.ILev, i.FLev])
 
         filename = 'intensity_z'+str(_nucleus.z)+'.a'+str(_nucleus.a)
         f = open(filename,'w')
         
         for i in Intensities:
-                print('{0} {1} {2}'.format(i[0],i[1],i[2]), file=f)
+                print('{0} {1} {2} {3} {4}'.format(i[0],i[1],i[2], i[3], i[4]), file=f)
 
         return Intensities
     ################################################################################

@@ -91,11 +91,11 @@ class TestReadFile(unittest.TestCase):
     #    self.assertEqual(level_lines, file_level_lines)
 
     def test_generate_levels(self):
-        file = open('test_level_lines.txt')
+        file = open('test/test_level_lines.txt')
         file_level_lines = file.read().splitlines()
         file.close()
 
-        file = open('test_levels.txt')
+        file = open('test/test_levels.txt')
         file_levels = file.readlines()
         file.close()
 
@@ -107,14 +107,14 @@ class TestReadFile(unittest.TestCase):
         LevelsReturn = InputFuncs.generate_levels(file_level_lines)
 
         for i, entry in enumerate(LevelsReturn): 
-            self.assertTrue(LevelsReturn[i] == LevelsRef[i])
+            self.assertTrue(LevelsReturn[i] == file_LevelsRef[i])
 
     def test_generate_gammas(self):
-        file = open ('test_gamma_lines.txt')
+        file = open ('test/test_gamma_lines.txt')
         file_gamma_lines = file.read().splitlines()
         file.close()
 
-        file = open('test_gammas.txt')
+        file = open('test/test_gammas.txt')
         file_gammas = file.readlines()
         file.close()
         
@@ -123,7 +123,7 @@ class TestReadFile(unittest.TestCase):
             i = lines.split()
             file_GammasRef.append(Transition(int(i[0]), float(i[1]), float(i[2]), i[3], int(i[4]), float(i[5]), float(i[6]), float(i[7]), float(i[8]), float(i[9]), float(i[10]), float(i[11])))
 
-        file = open('test_levels.txt')
+        file = open('test/test_levels.txt')
         file_levels = file.readlines()
         file.close()
 
@@ -139,7 +139,7 @@ class TestReadFile(unittest.TestCase):
 
     
     def test_generate_g4_input(self):
-        file = open('test_generate_g4_entries.txt')
+        file = open('test/test_generate_g4_entries.txt')
         file_g4_input= file.readlines()
         file.close()
 
@@ -148,11 +148,11 @@ class TestReadFile(unittest.TestCase):
             i = lines.split()
             file_G4LevelGammaRef.append(G4LevelGammaEntry(float(i[0]),float(i[1]), float(i[2]),i[3],float(i[4]),float(i[5]),float(i[6]),float(i[7]),float(i[8]),float(i[9]),float(i[10]),float(i[11]),float(i[12]),float(i[13]),float(i[14]),float(i[15]),float(i[16])))
 
-        file = open('test_level_lines.txt')
+        file = open('test/test_level_lines.txt')
         file_level_lines = file.read().splitlines()
         file.close()
 
-        file = open('test_levels.txt')
+        file = open('test/test_levels.txt')
         file_levels = file.readlines()
         file.close()
 
@@ -161,7 +161,7 @@ class TestReadFile(unittest.TestCase):
             i = lines.split()
             file_LevelsRef.append(Level(int(i[0]),float(i[1]),i[2],int(i[3])))
 
-        file = open('test_gammas.txt')
+        file = open('test/test_gammas.txt')
         file_gammas = file.readlines()
         file.close()
         
@@ -182,7 +182,7 @@ class TestReadFile(unittest.TestCase):
     def test_extract_intensities(self):
     #   extract ags intensities and return a list with energy, intensity
     #   TODO this is expecting the intensities before correcting for the ICC, need to fix this or it fails
-        file = open('test_intensities.txt')
+        file = open('test/test_intensities.txt')
         file_intensities = file.readlines()
         file.close()
 
@@ -191,7 +191,7 @@ class TestReadFile(unittest.TestCase):
             i = entry.split()
             IntensitiesRef.append([float(i[0]),float(i[1]),float(i[2])])
 
-        file = open('test_gammas.txt')
+        file = open('test/test_gammas.txt')
         file_gammas = file.readlines()
         file.close()
 
