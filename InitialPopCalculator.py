@@ -184,6 +184,7 @@ def main():
     findPopulatingLevels(transitions, unique_levels_in)
    
     total_intensity = calculateInitialPopulation(unique_levels_in, unique_levels_out, initial_population)
+    print(total_intensity)
     generateInitialPopulationFile(initial_population, total_intensity, z, a)
 
 if __name__ == "__main__":
