@@ -5,12 +5,12 @@ NOTE : Floating bands cannot currently be handled, this is a Geant4 limitation
 This is not ready yet.
 
 ## Requirements:
-* Geant4.10.4 (input data files changed from 4.10.3->4.10.4)
+* Geant4.10.4 or newer (input data files changed from 4.10.3->4.10.4)
 * Qt (if you want visualisations)
 * Root6 (needed if you use NPTool)
 * [CADMesh](https://github.com/christopherpoole/CADMesh) (needed if you are using the Spede part of NPTool)
 * NPTool (if you want an easy way to input this files and spin populations)
-* BrIcc and BrIccs (website is currently down so I can't link it here)
+* BrIcc and BrIccs, included here for convenience
 * Python3 (tested with 3.6.5)
 * numpy (really useful python extension)
 
@@ -58,18 +58,24 @@ Here is an example of the header and a few E0 transitions;
 |   | 200 | E0 | 0 | 0 | 350 | 150 |
 |   | 500 | E0 | 0 | 0 | 500 | 0 |
 
-Currently the transitions are being matched with their correct initial and final states based on their energies, as the level index assigned by radware is not something obvious to the user and would require parsing the file to generate the inputs (there is probably a better way to do this)
+[THIS HAS BEEN CHANGED and now all the levels are indexed and that is used to match levels and transitions]Currently the transitions are being matched with their correct initial and final states based on their energies, as the level index assigned by radware is not something obvious to the user and would require parsing the file to generate the inputs (there is probably a better way to do this)
 
 This is the only file the user will have to write for themselves and will likely only be a few lines long.
 
 NB: the ## is a standard flag used in the .ags format so it's been carried over here for consistency.
 
 # Running Spede & Sage NPTool and also using user generated files
-"[NPTool](nptool.org), which stands for Nuclear Physics Tool, is an open source and freely distributed data analysis and Monte Carlo simulation package for low-energy nuclear physics experiments. The NPTool package aims to offer an unified framework for preparing and analysing complex experiments, making an efficient use of Geant4 and ROOT toolkits."
+"[NPTool](https://gitlab.in2p3.fr/np/nptool/-/tree/NPTool.2.dev.Spede), which stands for Nuclear Physics Tool, is an open source and freely distributed data analysis and Monte Carlo simulation package for low-energy nuclear physics experiments. The NPTool package aims to offer an unified framework for preparing and analysing complex experiments, making an efficient use of Geant4 and ROOT toolkits."
 
 It's a good way for running nuclear physics based Geant4 simulations because it skips the reinventing the wheel part of every simulation.
 
 This is not a comprehensive tutorial but just some tips to run NPTool with these generated input files and also some specifics on the Sage and Spede simulations.
+
+The link is for the experimental branch with Sage and Spede included.
+Follow the instructions included on the gitlab for nptool.
+For simplicity only compile the detectors you want
+
+cmake ./ -DETLIST="Sage Jurogam Spede"
 
 ## Inputing user PhotonEvaporation files
 In the event generator input file you need to add three flags to get NPTool to use your PhotonEvaporation file over the built in one.
