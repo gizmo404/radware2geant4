@@ -12,6 +12,7 @@ This is not ready yet.
 * NPTool (if you want an easy way to input this files and spin populations)
 * BrIcc and BrIccs, included here for convenience
 * Python3 (tested with 3.6.5)
+* [pytest](https://docs.pytest.org/en/latest/getting-started.html)
 * numpy (really useful python extension)
 
 ## Included files:
@@ -69,7 +70,7 @@ NB: the ## is a standard flag used in the .ags format so it's been carried over 
 
 It's a good way for running nuclear physics based Geant4 simulations because it skips the reinventing the wheel part of every simulation.
 
-This is not a comprehensive tutorial but just some tips to run NPTool with these generated input files and also some specifics on the Sage and Spede simulations.
+This is not a comprehensive tutorial (yet) but just some tips to run NPTool with these generated input files and also some specifics on the Sage and Spede simulations.
 
 The link is for the experimental branch with Sage and Spede included.
 Follow the instructions included on the gitlab for nptool.

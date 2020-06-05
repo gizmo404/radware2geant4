@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 from math import log10, floor
 from pytest import approx
 import sys
-import unittest
+#import unittest
 import numpy
 from sys import platform
 
@@ -334,9 +334,9 @@ class InputFuncs(object):
                 intensity =     float(gamma_data[7])
             else:
                 Multi =         '0'
-                ILev =          int(gamma_data[4])
-                FLev =          int(gamma_data[5])
-                intensity =     float(gamma_data[6])
+                ILev =          int(gamma_data[3])
+                FLev =          int(gamma_data[4])
+                intensity =     float(gamma_data[5])
 
             ConvCoef =      float(gamma_data2[1])
             BrRatio =       float(gamma_data2[3])
