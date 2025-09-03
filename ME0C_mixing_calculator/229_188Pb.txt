@@ -1,0 +1,5 @@
+# BrIcc information + Total gamma intensity in RadWare units + Experimental K-conversion coefficient
+# (Mixing with only 1 multipolarity, i.e. E0+E2 / E0+M1..., => mixing,d,u = 0)
+# S	g       e	L	w               mixing  d       u       gamma_int       K-coeff
+
+Pb	229	1	E2	BrIccFO		0	0	0       11              1.50
